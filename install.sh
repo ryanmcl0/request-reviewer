@@ -12,7 +12,7 @@ HOOK_PATH="$HOOK_DIR/request-reviewer.py"
 SETTINGS="$HOME/.claude/settings.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODEL="${1:-qwen3.5:2b}"
-MATCHER="Bash|Write|Edit|MultiEdit|NotebookEdit|WebFetch|WebSearch"
+MATCHER="*"
 
 merge_settings() {
   python3 - "$SETTINGS" "$HOOK_PATH" "$MATCHER" "$1" <<'PY'

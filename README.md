@@ -134,9 +134,11 @@ innocuously. Defaults are chosen accordingly:
 - The model is instructed to prefer "unsure" over "allow", and hook failures
   always fall back to the normal human prompt.
 - The hook is a no-op when you're already running with permissions bypassed.
-- Clarifying questions and plan approvals (`AskUserQuestion`, `ExitPlanMode`)
-  are never reviewed — those are always yours to answer, even if you widen
-  the hook matcher to `*`.
+- Clarifying questions and plan approvals (`AskUserQuestion`, `ExitPlanMode`,
+  `EnterPlanMode`) are never reviewed — those are always yours to answer.
+  This is enforced in the script itself, not the hook matcher, so it holds
+  even though the matcher is `*` (every tool call is sent to the reviewer;
+  nothing slips through by not being listed).
 - Everything it decides is in the audit log.
 
 Treat it as a tireless first reviewer that eliminates 90% of the clicking,
