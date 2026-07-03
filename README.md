@@ -10,7 +10,7 @@ permission request to a small model running locally via
 dangerous or ambiguous ones still surface the normal prompt — now annotated
 with the reviewer's reason.
 
-- **Zero API tokens** — the reviewer runs entirely offline on your machine.
+- **Zero API tokens** — the reviewer runs entirely offline on your machine. You don't use *any* of your token allowance for reviewing the prompts, delegated to an offline local model.
 - **Zero dependencies** — one Python-stdlib script, one settings entry.
 - **Fail-safe** — if Ollama is down, times out, or errors, the hook emits no
   decision and Claude Code falls back to asking you, like it always did.
