@@ -130,18 +130,19 @@ def log(record):
         pass
 
 
-def emit(decision, reason):
-    print(
-        json.dumps(
-            {
-                "hookSpecificOutput": {
-                    "hookEventName": "PreToolUse",
-                    "permissionDecision": decision,
-                    "permissionDecisionReason": f"[request-reviewer:{MODEL}] {reason}",
-                }
-            }
-        )
-    )
+def emit(decision, reason, source):
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": decision,
+            "permissionDecisionReason": f"[request-reviewer:{MODEL}] {reason}",
+        }
+    }
+    # Auto-approvals are otherwise invisible in the transcript — the model
+    # only gets seen when it asks or denies. Surface the good case too.
+    if decision == "allow" and source == "model":
+        output["systemMessage"] = f"✓ Approved by offline reviewer ({MODEL}): {reason}"
+    print(json.dumps(output))
 
 
 def truncated(value):
@@ -259,7 +260,7 @@ def main():
             "latency_ms": round((time.time() - start) * 1000),
         }
     )
-    emit(final, reason)
+    emit(final, reason, source)
 
 
 if __name__ == "__main__":
