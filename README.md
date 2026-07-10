@@ -60,6 +60,38 @@ up for you:
 > The hook fails safe (no decision → normal permission prompt), so nothing
 > here can lock me out.
 
+## Tray / menu bar counter (optional)
+
+A tiny status-area app that shows how many permission prompts have been
+auto-approved so far — click the shield icon to see the count. It's a
+separate, optional add-on that reads the same audit log; the reviewer hook
+itself is pure Python and works identically with or without it, on any OS.
+
+**macOS** — a Swift menu bar app:
+
+```sh
+cd menubar
+./install.sh              # builds it and registers a LaunchAgent
+./install.sh --uninstall  # removes it
+```
+
+Requires Xcode Command Line Tools (`xcode-select --install`) to build. Once
+installed it starts at login, restarts itself if it ever crashes, and stays
+quit if you quit it from the menu — a LaunchAgent, independent of any
+terminal or Claude Code session.
+
+**Windows** — a PowerShell system tray icon (no build step; uses the .NET
+Windows Forms that ship with Windows):
+
+```powershell
+cd windows
+powershell -ExecutionPolicy Bypass -File install.ps1              # start + register logon task
+powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # remove
+```
+
+It registers a Scheduled Task that starts the icon at logon and restarts it
+if it crashes. Look for the shield icon in the notification area by the clock.
+
 ## How it works
 
 ```
