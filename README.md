@@ -151,8 +151,37 @@ e.g. `"command": "REVIEWER_MODEL=qwen3.5:9b REVIEWER_ON_DENY=deny python3 ~/.cla
 | `REVIEWER_ON_DENY` | `ask` | What a model "deny" becomes: `ask` shows you the prompt with the reason; `deny` blocks with no human involved (fully unattended mode) |
 | `REVIEWER_TIMEOUT` | `45` | Seconds to wait for the model before falling back to a normal prompt |
 | `REVIEWER_OLLAMA_URL` | `http://localhost:11434` | Ollama server |
-| `REVIEWER_KEEP_ALIVE` | `30m` | How long Ollama keeps the model resident in RAM |
+| `REVIEWER_KEEP_ALIVE` | `5m` | How long Ollama keeps the model resident in RAM after the last call |
+| `REVIEWER_MEMORY_GUARD` | `1` | Stand down when the machine is out of memory; `0` always consults the model |
+| `REVIEWER_MAX_PRESSURE` | `2` | macOS: kernel pressure level to stand down at (`2` warning, `4` critical only) |
+| `REVIEWER_MAX_USED` | `92` | Linux: percent of RAM in use to stand down at |
 | `REVIEWER_LOG` | `~/.claude/request-reviewer.log` | JSONL audit log; set to empty to disable |
+| `REVIEWER_LOG_MAX_MB` | `5` | Rotate the audit log past this size; `0` never rotates |
+
+## Memory behaviour
+
+The hook runs on every tool call, so during a working session the model is
+resident continuously and `REVIEWER_KEEP_ALIVE` really controls only the tail:
+how many GB stay pinned after you stop. A 2B model reloads in a couple of
+seconds, so the default is deliberately short.
+
+There is also a floor. Before consulting the model the reviewer asks the OS
+whether memory is under pressure, and if it is, unloads the model and emits no
+decision, so you get the normal permission prompt. The deterministic tier is
+unaffected, since it is pure regex. This matters because the failure mode
+without it is nasty: on a machine already deep in swap, decisions that
+normally take ~1.4s were measured at 39-45s, each one stalling the agent while
+the reviewer competed for the memory that was missing. A click is cheaper than
+a stall.
+
+On macOS this reads `kern.memorystatus_vm_pressure_level`, the same signal the
+OS uses to tell applications to release memory. Note that "percent free
+memory" is *not* usable on macOS: it measures 0.8% on a completely healthy
+machine, because the OS deliberately keeps free pages near zero. On Linux,
+`MemAvailable` accounts for reclaimable cache and is used directly.
+
+If you would rather have the model consulted no matter what, set
+`REVIEWER_MEMORY_GUARD=0`.
 
 ## Security notes, honestly
 
